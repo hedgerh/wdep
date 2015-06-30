@@ -1,0 +1,26 @@
+{
+  "name": "wdep",
+  "version": "0.0.1",
+  "description": "see descriptions for all dependencies in package.json",
+  "preferGlobal": "true",
+  "bin": {
+    "wdep" : "./bin/wdep.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hedgerh/wdep.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hedgerh/wdep/issues"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Harry Hedger",
+  "license": "MIT",
+  "dependencies": {
+    "cli-table": "^0.3.1",
+    "npm": "^2.12.0",
+    "yargs": "^3.14.0"
+  }
+}
