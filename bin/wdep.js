@@ -4,9 +4,30 @@ var colors = require('colors/safe');
 var async = require('async');
 var npm = require('npm');
 var fs = require('fs');
-var argv = require('yargs').argv;
 var Table = require('cli-table');
 var exec = require('sync-exec');
+var yargs = require('yargs');
+
+// Command Line Interface
+var argv = yargs.usage('Usage: $0 [options]', {
+  'd': {
+    description: 'Get only dev dependencies',
+    requiresArg: false,
+    short: 'd',
+    alias: 'dev'
+  },
+  'p': {
+    description: 'Get only regular dependencies',
+    requiresArg: false,
+    short: 'p',
+    alias: 'prod'
+  }
+  })
+  .alias('h', 'help')
+  .alias('v', 'version')
+  .help('help')
+  .version('1.0.1', 'version', 'Display version information')
+  .argv;
 
 if (module.parent) {
   module.exports = start;
@@ -20,36 +41,32 @@ function start(opts) {
   } catch (e) {
     error('Could not find package.json!');
   }
-  var deps = Object.keys(json.dependencies || {});
-  getRegistryData(deps, function(err, data) {
-    if(err) {
+  var deps = [];
+
+  if (!opts.dev) {
+    deps.push({title: 'Dependencies', list: Object.keys(json.dependencies || {})});
+  }
+  if (!opts.prod) {
+    deps.push({title: 'Dev Dependencies', list: Object.keys(json.devDependencies || {})});
+  }
+
+  deps.forEach(getRegistryData);
+}
+
+function getRegistryData(modules) {
+  if (!modules.list.length) {
+    return;
+  }
+  _fetchRegistryData(modules.list, function(err, data) {
+    if (err) {
       error('Error fetching data from npm registry!');
     } else {
-      renderTable(data);
+      renderTable(modules.title, data);
     }
   });
 }
 
-function error(str) {
-  console.error(colors.red('[ERROR] ') + colors.yellow(str));
-  process.exit(1);
-}
-
-function renderTable(data) {
-  var table = new Table({
-    head: ['name', 'description'], 
-    colWidths: [20, 80]
-  });
-  data.forEach(function(moduleVersions) {
-    var latestModuleVersion = Object.keys(moduleVersions).pop();
-    var moduleData = moduleVersions[latestModuleVersion];
-    table.push([moduleData.name, moduleData.description]);
-  });
-  table.sort(sortAlphabetic);
-  console.log(table.toString());
-}
-
-function getRegistryData(arr, cb) {
+function _fetchRegistryData(arr, cb) {
   npm.load(function(err) {
     if(err) {
       return cb(err);
@@ -60,6 +77,21 @@ function getRegistryData(arr, cb) {
   });
 }
 
+function renderTable(title, data) {
+  var table = new Table({
+    head: ['name', 'description'], 
+    colWidths: [20, 80]
+  });
+  data.forEach(function(moduleVersions) {
+    var latestModuleVersion = Object.keys(moduleVersions).pop();
+    var moduleData = moduleVersions[latestModuleVersion];
+    table.push([moduleData.name, moduleData.description]);
+  });
+  table.sort(sortAlphabetic);
+  console.log('\n' + colors.bold(title.toUpperCase()));
+  console.log(table.toString());
+}
+
 function getPackageJson() {
   var root = exec('npm root').stdout;
   var bits = root.split('/');
@@ -68,12 +100,17 @@ function getPackageJson() {
   return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 }
 
-function sortAlphabetic(elemA, elemB) {
-  if (elemA[0] > elemB[0]) {
+function sortAlphabetic(a, b) {
+  if (a[0] > b[0]) {
     return 1;
   } 
-  if (elemA[0] < elemB[0]) {
+  if (a[0] < b[0]) {
     return -1;
   }
   return 0;
+}
+
+function error(str) {
+  console.error(colors.red('[ERROR] ' + str));
+  process.exit(1);
 }
