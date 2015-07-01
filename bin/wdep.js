@@ -6,9 +6,15 @@ var npm = require('npm');
 var fs = require('fs');
 var argv = require('yargs').argv;
 var Table = require('cli-table');
-var exec = require('sync-exec')
+var exec = require('sync-exec');
 
-function start(err, npm) {
+if (module.parent) {
+  module.exports = start;
+} else {
+  start(argv);
+}
+
+function start(opts) {
   try {
     var json = getPackageJson();
   } catch (e) {
@@ -71,5 +77,3 @@ function sortAlphabetic(elemA, elemB) {
   }
   return 0;
 }
-
-start();
