@@ -1,7 +1,7 @@
 # wdep
 Renders a table with the names and descriptions of an npm package's dependencies.
 
-![example table of dependencies from wdep](./doc/img/example.png)
+![example table of dependencies from wdep](https://github.com/hedgerh/wdep/blob/master/doc/img/example.png)
 -------
 ## Installation:
 ```
