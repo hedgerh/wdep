@@ -27,7 +27,7 @@ function start(err, npm) {
     var pkg = JSON.parse(packageFile);
 
     var modules = Object.keys(pkg.dependencies);
-    var devDependencies = (pkg.devDependencies) ? Object.keys(pkg.devDependencies) : null;
+    var devDependencies = Object.keys(pkg.devDependencies) || [];
 
     // if dev flag is set, include devDependencies
     if (argv.dev) {
