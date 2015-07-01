@@ -12,18 +12,21 @@ function start(err, npm) {
   try {
     var json = getPackageJson();
   } catch (e) {
-    console.error(colors.red('Could not find package.json!'));
-    process.exit(1);
+    error('Could not find package.json!');
   }
   var deps = Object.keys(json.dependencies || {});
   getRegistryData(deps, function(err, data) {
     if(err) {
-     console.error(colors.red('Error fetching data from npm registry!'));
-      process.exit(1);
+      error('Error fetching data from npm registry!');
     } else {
       renderTable(data);
     }
   });
+}
+
+function error(str) {
+  console.error(colors.red('[ERROR] ') + colors.yellow(str));
+  process.exit(1);
 }
 
 function renderTable(data) {
@@ -31,11 +34,12 @@ function renderTable(data) {
     head: ['name', 'description'], 
     colWidths: [20, 80]
   });
-  data.forEach(function(a) {
-    var module = a[Object.keys(a)];
-    table.push([module.name, module.description]);
+  data.forEach(function(moduleVersions) {
+    var latestModuleVersion = Object.keys(moduleVersions).pop();
+    var moduleData = moduleVersions[latestModuleVersion];
+    table.push([moduleData.name, moduleData.description]);
   });
-  table.sort(sortByNameAscending);
+  table.sort(sortAlphabetic);
   console.log(table.toString());
 }
 
@@ -58,7 +62,7 @@ function getPackageJson() {
   return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 }
 
-function sortByNameAscending(elemA, elemB) {
+function sortAlphabetic(elemA, elemB) {
   if (elemA[0] > elemB[0]) {
     return 1;
   } 
