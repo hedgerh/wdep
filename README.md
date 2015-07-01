@@ -1,16 +1,21 @@
 # wdep
+Renders a table with the names and descriptions of an npm package's dependencies.
 
-##Usage:
-Pass a package.json file to wdep, and it will print a table containing all dependencies contained within the package, as well as descriptions for each module.  If you call wdep with no arguments, it will look for a package.json in the current directory.
-
-```
-wdep
-or
-wdep package.json
-```
-
-
-##Installation:
+![example table of dependencies from wdep](./doc/img/example.png)
+-------
+## Installation:
 ```
 npm install -g wdep
+```
+
+## Usage:
+Run anywhere within a project's folder tree, and wdep will find the package.json.
+```
+wdep [options]
+
+Options:
+  -d, --dev      Get only dev dependencies
+  -p, --prod     Get only regular dependencies
+  -h, --help     Show help                                             [boolean]
+  -v, --version  Display version information                           [boolean]
 ```
