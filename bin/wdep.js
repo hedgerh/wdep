@@ -8,62 +8,71 @@ var Table = require('cli-table');
  
 var table = new Table({
     head: ['name', 'description'], 
-    colWidths: [20, 100]
+    colWidths: [20, 80]
 });
 
-npm.load(function(err, npm) {
-  start(npm);
-});
+npm.load(start);
 
-function start(npm) {
-  // resolve filename
+function start(err, npm) {
+  // resolve filenames
   var filename = (argv._.length) ? argv._[0] : 'package.json';
   var file = path.join(process.cwd(), filename);
 
   // attempt to read the file
-  fs.readFile(file, 'utf8', function (err, pkgFile) {
-    if (err) return process.stderr.write(err + '\n');
-    pkgFile = JSON.parse(pkgFile);
-
-    var modules = getModules(pkgFile.dependencies);
-
-    // if dev flag is set, get devDependencies
-    if (argv.dev) {
-      modules = modules.concat(getModules(pkgFile.devDependencies));
+  fs.readFile(file, 'utf8', function(err, packageFile) {
+    if (err) {
+      return console.error(err + '\n');
     }
 
-    var count = modules.length;
-    modules.forEach(function (module) {
-      // query npm for each module
-      npm.commands.view([module, 'name', 'description'], true, function(err, data) {
-        for (var key in data) {
-          table.push([data[key].name, data[key].description]);
-          count--;
+    var pkg = JSON.parse(packageFile);
 
-          if (count === 0) {
-            // sort alphabetically
-            table.sort(function(a, b) {
-              if (a[0] > b[0]) {
-                return 1;
-              } else if (a[0] < b[0]) {
-                return -1;
-              }
+    var modules = Object.keys(pkg.dependencies);
+    var devDependencies = (pkg.devDependencies) ? Object.keys(pkg.devDependencies) : null;
 
-              return 0;
-            });
-            
-            displayTable();
-          }
-        }
-      });
-    });
+    // if dev flag is set, include devDependencies
+    if (argv.dev) {
+      modules = dependencies.concat(devDependencies);
+    }
+
+    buildTable(modules);
   });
 }
 
-function getModules(mods) {
-  return Object.keys(mods).map(function(name) {
-    return name;
-  });
+function buildTable(modules) {
+  var count = modules.length;
+
+  function queryNpm(module) {
+    // query npm for module
+    npm.commands.view([module, 'name', 'description'], true, _handleModule);
+  }
+
+  function _handleModule(err, module) {
+    Object.keys(module).forEach(function(index) { 
+      table.push([module[index].name, module[index].description]);
+    });
+
+    count--;
+
+    // once all modules are retrie
+    if (count === 0) {
+      table.sort(sortByNameAscending);
+      displayTable();
+    }
+  }
+
+  modules.forEach(queryNpm);
+}
+
+function sortByNameAscending(elemA, elemB) {
+  if (elemA[0] > elemB[0]) {
+    return 1;
+  } 
+
+  if (elemA[0] < elemB[0]) {
+    return -1;
+  }
+
+  return 0;
 }
 
 function displayTable() {
