@@ -8,13 +8,13 @@ var argv = require('yargs').argv;
 var Table = require('cli-table');
 var exec = require('sync-exec');
 
-if(module.parent) {
+if (module.parent) {
   module.exports = start;
 } else {
   start(argv);
 }
 
-function start(err, npm) {
+function start(opts) {
   try {
     var json = getPackageJson();
   } catch (e) {
