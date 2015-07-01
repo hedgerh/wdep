@@ -57,7 +57,7 @@ function getRegistryData(modules) {
   if (!modules.list.length) {
     return;
   }
-  _fetchRegistryData(modules.list, function(err, data) {
+  fetchRegistryData(modules.list, function(err, data) {
     if (err) {
       error('Error fetching data from npm registry!');
     } else {
@@ -66,7 +66,7 @@ function getRegistryData(modules) {
   });
 }
 
-function _fetchRegistryData(arr, cb) {
+function fetchRegistryData(arr, cb) {
   npm.load(function(err) {
     if(err) {
       return cb(err);
