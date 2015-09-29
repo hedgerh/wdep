@@ -32,15 +32,35 @@ var argv = yargs.usage('Usage: $0 [options]', {
 if (module.parent) {
   module.exports = start;
 } else {
-  start(argv);
+  if (argv._.length) {
+    npm.load(function(err) {
+      if(err) {
+        return cb(err);
+      }
+
+      npm.commands.view([argv._[0], 'dependencies'], true, function(err, res) {
+        start(argv, res);
+      });
+    });
+  } else {
+    start(argv);
+  }
 }
 
-function start(opts) {
-  try {
-    var json = getPackageJson();
-  } catch (e) {
-    error('Could not find package.json!');
+function start(opts, data) {
+  var json = {};
+
+  if (data) {
+    var latestModuleVersion = Object.keys(data).pop();
+    json = data[latestModuleVersion];
+  } else {
+    try {
+      json = getPackageJson();
+    } catch (e) {
+      error('Could not find package.json!');
+    }
   }
+
   var deps = [];
 
   if (!opts.dev) {
