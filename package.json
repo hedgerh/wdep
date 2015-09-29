@@ -1,6 +1,6 @@
 {
   "name": "wdep",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "see descriptions for all dependencies in package.json",
   "preferGlobal": "true",
   "bin": {

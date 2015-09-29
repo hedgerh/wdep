@@ -11,6 +11,10 @@ npm install -g wdep
 ## Usage:
 Run anywhere within a project's folder tree, and wdep will find the package.json.
 ```
+// specify a package
+wdep [package] [options]
+
+// current project
 wdep [options]
 
 Options:
