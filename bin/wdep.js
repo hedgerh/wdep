@@ -10,6 +10,12 @@ var yargs = require('yargs');
 
 // Command Line Interface
 var argv = yargs.usage('Usage: $0 [options]', {
+  'f': {
+    description: 'Specify a package folder',
+    requiresArg: true,
+    short: 'f',
+    alias: 'folder'
+  },
   'd': {
     description: 'Get only dev dependencies',
     requiresArg: false,
@@ -29,6 +35,7 @@ var argv = yargs.usage('Usage: $0 [options]', {
   .version('1.0.1', 'version', 'Display version information')
   .argv;
 
+
 if (module.parent) {
   module.exports = start;
 } else {
@@ -39,6 +46,10 @@ if (module.parent) {
       }
 
       npm.commands.view([argv._[0], 'dependencies'], true, function(err, res) {
+        if (err) {
+          console.log('Error: npm package does not exist!')
+          return
+        }
         start(argv, res);
       });
     });
@@ -55,9 +66,9 @@ function start(opts, data) {
     json = data[latestModuleVersion];
   } else {
     try {
-      json = getPackageJson();
+      json = getPackageJson(opts.folder);
     } catch (e) {
-      error('Could not find package.json!');
+      console.log('Could not find package.json!');
     }
   }
 
@@ -112,7 +123,11 @@ function renderTable(title, data) {
   console.log(table.toString());
 }
 
-function getPackageJson() {
+function getPackageJson(folder) {
+  if (folder) {
+    return JSON.parse(fs.readFileSync(folder + '/package.json', 'utf8'))
+  }
+
   var root = exec('npm root').stdout;
   var bits = root.split('/');
   bits[bits.length - 1] = 'package.json'
